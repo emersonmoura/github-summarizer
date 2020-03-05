@@ -1,7 +1,7 @@
 package scalac.summarizer.ioc
 
 import scalac.summarizer.handler.OrganizationHandler
-import scalac.summarizer.model.ClientHandler
+import scalac.summarizer.http.ClientHandler
 import scalac.summarizer.router.OrganizationRouter
 
 object ObjectsFactory {

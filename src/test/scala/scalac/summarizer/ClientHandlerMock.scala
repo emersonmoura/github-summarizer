@@ -1,9 +1,9 @@
-package scalac.summarizer.infra
+package scalac.summarizer
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import org.scalamock.scalatest.MockFactory
-import scalac.summarizer.model.HttpClient
+import scalac.summarizer.http.HttpClient
 
 import scala.concurrent.Future
 

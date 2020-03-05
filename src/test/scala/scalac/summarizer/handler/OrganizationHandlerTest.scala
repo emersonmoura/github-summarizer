@@ -1,19 +1,20 @@
 package scalac.summarizer.handler
 
-import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.util.ByteString
-import org.scalamock.scalatest.MockFactory
+import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{AsyncFlatSpec, Matchers}
-import scalac.summarizer.infra.ClientHandlerMock
+import scalac.summarizer.ClientHandlerMock
 import scalac.summarizer.model.Contributor
 
 import scala.concurrent.Future
 
-class OrganizationHandlerTest() extends AsyncFlatSpec with Matchers with MockFactory {
-  val httpClientMock: ClientHandlerMock = new ClientHandlerMock()
+class OrganizationHandlerTest extends AsyncFlatSpec with Matchers with AsyncMockFactory {
+
+  private val httpClientMock: ClientHandlerMock = new ClientHandlerMock()
   private val organizationHandler = new OrganizationHandler(httpClientMock)
 
-  "the class creation" should "be validated" in {
+  "given an valid json" should "be processed" in {
     val organization = "myOrg"
     val stripString =  """[
           {
@@ -25,12 +26,12 @@ class OrganizationHandlerTest() extends AsyncFlatSpec with Matchers with MockFac
             "contributions": 2
           }
         ]""".stripMargin
-      httpClientMock.mock.expects(HttpRequest(uri = "http://api.github.com/v3/"))
-     .returning(Future.successful(HttpResponse(entity = HttpEntity(ByteString(stripString)))))
+      httpClientMock.mock.expects(*)
+     .returning(Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,ByteString(stripString)))))
 
-    val futureSum: Future[Contributor] = organizationHandler.getRankingByOrganization(organization)
+    val contributors: Future[List[Contributor]] = organizationHandler.contributorsRankingByOrganization(organization)
 
-    futureSum map { it => assert(it == null) }
+    contributors map { it => assert(it != null) }
   }
 
 }

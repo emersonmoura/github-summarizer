@@ -1,4 +1,4 @@
-package scalac.summarizer.model
+package scalac.summarizer.http
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}

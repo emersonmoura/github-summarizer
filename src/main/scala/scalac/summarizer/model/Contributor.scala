@@ -1,3 +1,3 @@
 package scalac.summarizer.model
 
-case class Contributor(name: String, contributions: Int)
+case class Contributor(login: String, contributions: Int)
