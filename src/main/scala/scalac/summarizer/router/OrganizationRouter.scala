@@ -2,8 +2,9 @@ package scalac.summarizer.router
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives.{complete, get, path}
+import scalac.summarizer.handler.OrganizationHandler
 
-class OrganizationRouter {
+class OrganizationRouter(organizationHandler: OrganizationHandler) {
 
   val route =
     path("hello") {

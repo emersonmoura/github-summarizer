@@ -1,11 +1,11 @@
 package scalac.summarizer
 
 import akka.http.scaladsl.server.{HttpApp, Route}
-import scalac.summarizer.router.OrganizationRouter
+import scalac.summarizer.ioc.ObjectsFactory
 
 object WebServer extends HttpApp {
   override def routes: Route =
-    concat(new OrganizationRouter().route)
+    concat(ObjectsFactory.createOrganizationRouter.route)
 }
 
 object Main extends App{
