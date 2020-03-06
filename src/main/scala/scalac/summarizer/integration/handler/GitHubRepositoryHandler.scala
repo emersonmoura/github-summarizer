@@ -16,6 +16,7 @@ class GitHubRepositoryHandler(httpClient: HttpClient) extends JsonSupport with R
   def repositoriesByOrganization(organization: String): Future[Seq[GitHubRepository]] = {
     val request = HttpRequest(uri = s"https://api.github.com/orgs/$organization/repos")
     httpClient.sendRequest(request).flatMap(response => Unmarshal(response).to[Seq[GitHubRepository]])
+      .fallbackTo(Future.successful(Seq.empty[GitHubRepository]))
   }
 
   private def headers = {

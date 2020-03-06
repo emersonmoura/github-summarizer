@@ -14,8 +14,6 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
   private val httpClientMock: ClientHandlerMock = new ClientHandlerMock()
   private val handler = new GitHubRepositoryHandler(httpClientMock)
 
-
-
   "given an valid json" should "be processed" in {
     val organization = "myOrg"
     val organizationString = """[
@@ -39,6 +37,15 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
     val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization(organization)
 
     contributors map  { it => assert(!it.map(_.contributorsUrl).contains(null)) }
+  }
+
+  "given a failed response" should "return an empty list" in {
+    httpClientMock.mock.expects(*)
+      .returning(Future.failed(new IllegalArgumentException()))
+
+    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("*")
+
+    contributors map  { it => it should have size 0 }
   }
 
 }

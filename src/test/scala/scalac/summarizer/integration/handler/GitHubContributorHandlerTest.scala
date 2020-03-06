@@ -34,4 +34,13 @@ class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with Asyn
     contributors map  { it => assert(!it.map(_.contributions).contains(0)) }
   }
 
+  "given a failed response" should "return an empty list" in {
+    httpClientMock.mock.expects(*)
+      .returning(Future.failed(new IllegalArgumentException()))
+
+    val contributors: Future[Set[Contributor]] = handler.contributorsByRepository("*")
+
+    contributors map  { it => it should have size 0 }
+  }
+
 }

@@ -1,7 +1,7 @@
 package scalac.summarizer.handler
 
 import org.scalamock.scalatest.AsyncMockFactory
-import org.scalatest.{AsyncFlatSpec, Matchers}
+import org.scalatest.{AsyncFlatSpec, Matchers, OneInstancePerTest}
 import scalac.summarizer.integration.handler.{ContributorHandler, RepositoryHandler}
 import scalac.summarizer.integration.model.GitHubRepository
 import scalac.summarizer.model.Contributor
@@ -14,8 +14,27 @@ class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with Asy
   private val contributorMock = mock[ContributorHandler]
   private val organizationHandler = new ScalacOrganizationHandler(repositoryMock, contributorMock)
 
+  "given a failed repositories response" should "return an empty list" in {
+    returningContributors(
+      Future.successful(Set(Contributor(name = "name", contributions = 10))),
+      returnedUrl(Future.failed(new IllegalArgumentException()))
+    )
+
+    val contributors: Future[Seq[Contributor]] = organizationHandler.contributorsRankingByOrganization("organization")
+
+    contributors map  { it => it should have size 0 }
+  }
+
+  "given a failed contributors response" should "return an empty list" in {
+    returningContributors(Future.failed(new IllegalArgumentException()))
+
+    val contributors: Future[Seq[Contributor]] = organizationHandler.contributorsRankingByOrganization("organization")
+
+    contributors map  { it => it should have size 0 }
+  }
+
   "given a repository with contributors" should "have its ones processed" in {
-    returningContributors(Set(Contributor(name = "name", contributions = 10)))
+    returningContributors(Future.successful(Set(Contributor(name = "name", contributions = 10))))
 
     val contributors: Future[Seq[Contributor]] = organizationHandler.contributorsRankingByOrganization("organization")
 
@@ -23,7 +42,10 @@ class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with Asy
   }
 
   "given a repository with more than one contributor" should "return it sorted by their contributions" in {
-    returningContributors(Set(Contributor(name = "first", contributions = 10), Contributor(name = "second", contributions = 1)))
+    returningContributors(Future.successful(
+      Set(Contributor(name = "first", contributions = 10),
+      Contributor(name = "second", contributions = 1))
+    ))
 
     val contributors: Future[Seq[Contributor]] = organizationHandler.contributorsRankingByOrganization("organization")
 
@@ -34,14 +56,17 @@ class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with Asy
 
   }
 
-  private def returningContributors(contributors: Set[Contributor]) = {
-    val repositoryUrl = "http://api.github.com/v3/repository"
-    returningTheUrl(repositoryUrl)
-    (contributorMock.contributorsByRepository _).expects(repositoryUrl).returning(Future.successful(contributors))
+  private def returningContributors(contributors: Future[Set[Contributor]], url: => String = returnedUrl()) = {
+    (contributorMock.contributorsByRepository _).stubs(url).returning(contributors)
   }
 
-  private def returningTheUrl(githubUrl: String) : Unit = {
-    (repositoryMock.repositoriesByOrganization _).expects(*)
-      .returning(Future.successful(Seq(GitHubRepository(name = "name", contributorsUrl = githubUrl))))
+  private def returnedUrl(future: => Future[Seq[GitHubRepository]] = successFulRepoFut()) : String = {
+    val repositoryUrl = "http://api.github.com/v3/repository"
+    (repositoryMock.repositoriesByOrganization _).stubs(*).returning(future)
+    repositoryUrl
+  }
+
+  private def successFulRepoFut(repositoryUrl: String =  "http://api.github.com/v3/repository") = {
+    Future.successful(Seq(GitHubRepository(name = "name", contributorsUrl = repositoryUrl)))
   }
 }
