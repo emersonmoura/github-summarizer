@@ -14,23 +14,25 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
   private val httpClientMock: ClientHandlerMock = new ClientHandlerMock()
   private val handler = new GitHubRepositoryHandler(httpClientMock)
 
-  val organizationString = """[
-                 |  {
-                 |    "name": "styleguide",
-                 |    "contributors_url": "https://api.github.com/repos/animikii/styleguide/contributors"
-                 |  },
-                 |  {
-                 |    "name": "payola",
-                 |    "contributors_url": "https://api.github.com/repos/animikii/payola/contributors"
-                 |  },
-                 |  {
-                 |    "name": "ubc-ceih",
-                 |    "contributors_url": "https://api.github.com/repos/animikii/ubc-ceih/contributors"
-                 |  }
-                 |]""".stripMargin
+
 
   "given an valid json" should "be processed" in {
     val organization = "myOrg"
+    val organizationString = """[
+                               |  {
+                               |    "name": "styleguide",
+                               |    "contributors_url": "https://api.github.com/repos/animikii/styleguide/contributors"
+                               |  },
+                               |  {
+                               |    "name": "payola",
+                               |    "contributors_url": "https://api.github.com/repos/animikii/payola/contributors"
+                               |  },
+                               |  {
+                               |    "name": "ubc-ceih",
+                               |    "contributors_url": "https://api.github.com/repos/animikii/ubc-ceih/contributors"
+                               |  }
+                               |]""".stripMargin
+
       httpClientMock.mock.expects(*)
      .returning(Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,ByteString(organizationString)))))
 

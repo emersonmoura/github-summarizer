@@ -14,7 +14,7 @@ class OrganizationHandlerTest extends AsyncFlatSpec with Matchers with AsyncMock
   private val contributorMock = mock[ContributorHandler]
   private val organizationHandler = new OrganizationHandler(repositoryMock, contributorMock)
 
-  "given an valid json" should "be processed" in {
+  "given a repository with contributors" should "have its ones processed" in {
     val repositoryUrl = "http://api.github.com/v3/repository"
     returningTheUrl(repositoryUrl)
 
@@ -25,7 +25,7 @@ class OrganizationHandlerTest extends AsyncFlatSpec with Matchers with AsyncMock
     contributors map  { it => assert(!it.map(_.contributions).contains(0)) }
   }
 
-  private def returningTheUrl(githubUrl: String) = {
+  private def returningTheUrl(githubUrl: String) : Unit = {
     (repositoryMock.repositoriesByOrganization _).expects(*)
       .returning(Future.successful(List(GitHubRepository(name = "name", contributorsUrl = githubUrl))))
   }
