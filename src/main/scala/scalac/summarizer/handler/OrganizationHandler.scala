@@ -12,7 +12,7 @@ class OrganizationHandler(repositoryHandler: RepositoryHandler, contributorHandl
 
   def contributorsRankingByOrganization(organization: String): Future[Set[Contributor]] = {
 
-    def localFunction(repositoryUrl: String):Future[Set[GitHubContributor]] = {
+    def getContributorsByRepository(repositoryUrl: String):Future[Set[GitHubContributor]] = {
       contributorHandler.contributorsByRepository(repositoryUrl)
     }
 
@@ -25,7 +25,7 @@ class OrganizationHandler(repositoryHandler: RepositoryHandler, contributorHandl
     }
 
     repositoryHandler.repositoriesByOrganization(organization).flatMap { repositories =>
-      Future.sequence(repositories.map(_.contributorsUrl).map(localFunction).map(changeModel)).map(reduce)
+      Future.sequence(repositories.map(_.contributorsUrl).map(getContributorsByRepository).map(changeModel)).map(reduce)
     }
   }
 
