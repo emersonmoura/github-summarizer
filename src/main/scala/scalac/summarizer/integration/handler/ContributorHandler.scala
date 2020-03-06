@@ -1,9 +1,9 @@
 package scalac.summarizer.integration.handler
 
-import scalac.summarizer.integration.model.GitHubContributor
+import scalac.summarizer.model.Contributor
 
 import scala.concurrent.Future
 
 trait ContributorHandler {
-  def contributorsByRepository(organization: String): Future[Set[GitHubContributor]]
+  def contributorsByRepository(organization: String): Future[Set[Contributor]]
 }

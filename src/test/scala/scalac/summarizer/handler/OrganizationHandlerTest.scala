@@ -3,7 +3,7 @@ package scalac.summarizer.handler
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{AsyncFlatSpec, Matchers}
 import scalac.summarizer.integration.handler.{ContributorHandler, RepositoryHandler}
-import scalac.summarizer.integration.model.{GitHubContributor, GitHubRepository}
+import scalac.summarizer.integration.model.GitHubRepository
 import scalac.summarizer.model.Contributor
 
 import scala.concurrent.Future
@@ -18,7 +18,7 @@ class OrganizationHandlerTest extends AsyncFlatSpec with Matchers with AsyncMock
     val repositoryUrl = "http://api.github.com/v3/repository"
     returningTheUrl(repositoryUrl)
 
-    (contributorMock.contributorsByRepository _).expects(repositoryUrl).returning(Future.successful(Set(GitHubContributor(login = "name", contributions = 10))))
+    (contributorMock.contributorsByRepository _).expects(repositoryUrl).returning(Future.successful(Set(Contributor(name = "name", contributions = 10))))
 
     val contributors: Future[Set[Contributor]] = organizationHandler.contributorsRankingByOrganization("organization")
 
