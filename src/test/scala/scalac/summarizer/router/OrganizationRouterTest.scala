@@ -19,7 +19,7 @@ class OrganizationRouterTest extends AsyncFlatSpec with Matchers with ScalatestR
 
   "given contributors for returning" should "return their information" in {
     val organization = "scalac"
-    def contributors = Set(Contributor(name = "name", contributions = 10))
+    def contributors = Seq(Contributor(name = "name", contributions = 10))
     (handlerMock.contributorsRankingByOrganization _).expects(organization).returning(Future.successful(contributors))
 
     Get(s"/org/$organization/contributors") ~> route ~> check {

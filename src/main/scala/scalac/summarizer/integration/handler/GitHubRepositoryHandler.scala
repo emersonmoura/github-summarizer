@@ -1,6 +1,6 @@
 package scalac.summarizer.integration.handler
 
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
+import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import scalac.summarizer.http.HttpClient
@@ -13,9 +13,9 @@ import scala.concurrent.Future
 
 class GitHubRepositoryHandler(httpClient: HttpClient) extends JsonSupport with RepositoryHandler{
 
-  def repositoriesByOrganization(organization: String): Future[List[GitHubRepository]] = {
+  def repositoriesByOrganization(organization: String): Future[Seq[GitHubRepository]] = {
     val request = HttpRequest(uri = s"https://api.github.com/orgs/$organization/repos")
-    httpClient.sendRequest(request).flatMap(response => Unmarshal(response).to[List[GitHubRepository]])
+    httpClient.sendRequest(request).flatMap(response => Unmarshal(response).to[Seq[GitHubRepository]])
   }
 
   private def headers = {

@@ -9,18 +9,18 @@ import scala.concurrent.Future
 
 class ScalacOrganizationHandler(repositoryHandler: RepositoryHandler, contributorHandler: ContributorHandler) extends JsonSupport with OrganizationHandler{
 
-  def contributorsRankingByOrganization(organization: String): Future[Set[Contributor]] = {
+  def contributorsRankingByOrganization(organization: String): Future[Seq[Contributor]] = {
 
     def getContributorsByRepository(repositoryUrl: String):Future[Set[Contributor]] = {
       contributorHandler.contributorsByRepository(repositoryUrl)
     }
 
-    def reduce(contributorsForReduction: List[Set[Contributor]]):Set[Contributor] = {
-      contributorsForReduction.fold(Set.empty[Contributor])((acc, contributors) => acc ++ contributors)
+    def reduceAndSort(contributorsForReduction: Seq[Set[Contributor]]):Seq[Contributor] = {
+      contributorsForReduction.fold(Set.empty[Contributor])((acc, contributors) => acc ++ contributors).toSeq.sortBy(_.contributions)
     }
 
     repositoryHandler.repositoriesByOrganization(organization).flatMap { repositories =>
-      Future.sequence(repositories.map(_.contributorsUrl).map(getContributorsByRepository)).map(reduce)
+      Future.sequence(repositories.map(_.contributorsUrl).map(getContributorsByRepository)).map(reduceAndSort)
     }
   }
 

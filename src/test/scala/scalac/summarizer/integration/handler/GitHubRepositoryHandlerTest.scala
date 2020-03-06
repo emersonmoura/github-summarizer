@@ -36,7 +36,7 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
       httpClientMock.mock.expects(*)
      .returning(Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,ByteString(organizationString)))))
 
-    val contributors: Future[List[GitHubRepository]] = handler.repositoriesByOrganization(organization)
+    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization(organization)
 
     contributors map  { it => assert(!it.map(_.contributorsUrl).contains(null)) }
   }
