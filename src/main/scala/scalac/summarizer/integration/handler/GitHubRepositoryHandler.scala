@@ -9,7 +9,7 @@ import scalac.summarizer.json.JsonSupport
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class GitHubRepositoryHandler(httpClient: HttpClient) extends JsonSupport {
+class GitHubRepositoryHandler(httpClient: HttpClient) extends JsonSupport with RepositoryHandler{
 
   def repositoriesByOrganization(organization: String): Future[List[GitHubRepository]] = {
     httpClient.sendRequest(HttpRequest(uri = "url")).flatMap(response => Unmarshal(response).to[List[GitHubRepository]])

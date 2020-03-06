@@ -12,6 +12,6 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val actorSystem: ActorSystem = ActorSystem()
   implicit val materialize: Materializer = ActorMaterializer()
   implicit val githubContributor = jsonFormat2(GitHubContributor)
-  implicit val githubRepository = jsonFormat2(GitHubRepository)
+  implicit val githubRepository = jsonFormat(GitHubRepository, "name", "contributors_url")
   implicit val contributor = jsonFormat2(Contributor)
 }
