@@ -8,11 +8,11 @@ import scalac.summarizer.model.Contributor
 
 import scala.concurrent.Future
 
-class OrganizationHandlerTest extends AsyncFlatSpec with Matchers with AsyncMockFactory {
+class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with AsyncMockFactory {
 
   private val repositoryMock = mock[RepositoryHandler]
   private val contributorMock = mock[ContributorHandler]
-  private val organizationHandler = new OrganizationHandler(repositoryMock, contributorMock)
+  private val organizationHandler = new ScalacOrganizationHandler(repositoryMock, contributorMock)
 
   "given a repository with contributors" should "have its ones processed" in {
     val repositoryUrl = "http://api.github.com/v3/repository"

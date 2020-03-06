@@ -1,15 +1,20 @@
 package scalac.summarizer.router
 
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
-import scalac.summarizer.handler.OrganizationHandler
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import scalac.summarizer.WebServer._
+import scalac.summarizer.handler.OrganizationHandler
+import scalac.summarizer.json.ServerJsonSupport
+import scalac.summarizer.model.Contributor
+import spray.json.DefaultJsonProtocol
 
-class OrganizationRouter(organizationHandler: OrganizationHandler) {
+class OrganizationRouter(organizationHandler: OrganizationHandler) extends ServerJsonSupport {
 
   val route =
     path("org" / Segment / "contributors") { name =>
         get {
-          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, s"<h1>Say hello to akka-http $name</h1>"))
+          onSuccess(organizationHandler.contributorsRankingByOrganization(name)){ contributors =>
+            complete(contributors)
+          }
         }
     }
 
