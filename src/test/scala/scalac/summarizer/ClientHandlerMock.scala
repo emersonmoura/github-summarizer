@@ -1,7 +1,7 @@
 package scalac.summarizer
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpRequest, HttpResponse}
+import akka.http.scaladsl.model._
 import akka.util.ByteString
 import org.scalamock.scalatest.MockFactory
 import scalac.summarizer.http.HttpClient

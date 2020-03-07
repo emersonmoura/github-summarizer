@@ -1,12 +1,12 @@
 package scalac.summarizer.integration.handler
 
+import akka.http.scaladsl.model.HttpHeader
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpResponse}
-import akka.util.ByteString
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{AsyncFlatSpec, Matchers}
 import scalac.summarizer.ClientHandlerMock
 import scalac.summarizer.integration.model.GitHubRepository
+
 import scala.collection.immutable
 import scala.concurrent.Future
 
