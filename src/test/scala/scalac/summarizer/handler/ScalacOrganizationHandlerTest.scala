@@ -10,6 +10,7 @@ import scala.concurrent.Future
 
 class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with AsyncMockFactory {
 
+  val repositoryUrl = "http://api.github.com/v3/repository"
   private val repositoryMock = mock[RepositoryHandler]
   private val contributorMock = mock[ContributorHandler]
   private val organizationHandler = new ScalacOrganizationHandler(repositoryMock, contributorMock)
@@ -17,7 +18,7 @@ class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with Asy
   "given a failed repositories response" should "return an empty list" in {
     returningContributors(
       Future.successful(Set(Contributor(name = "name", contributions = 10))),
-      returnedUrl(Future.failed(new IllegalArgumentException()))
+      Future.failed(new IllegalArgumentException())
     )
 
     val contributors: Future[Seq[Contributor]] = organizationHandler.contributorsRankingByOrganization("organization")
@@ -56,17 +57,16 @@ class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with Asy
 
   }
 
-  private def returningContributors(contributors: Future[Set[Contributor]], url: => String = returnedUrl()) = {
-    (contributorMock.contributorsByRepository _).stubs(url).returning(contributors)
+  private def returningContributors(contributors: Future[Set[Contributor]], future: => Future[Seq[GitHubRepository]] = successFulRepoFut()) = {
+    (contributorMock.contributorsByRepository _).stubs(repositoryUrl).returning(contributors)
+    returnedUrl(future)
   }
 
-  private def returnedUrl(future: => Future[Seq[GitHubRepository]] = successFulRepoFut()) : String = {
-    val repositoryUrl = "http://api.github.com/v3/repository"
+  private def returnedUrl(future: => Future[Seq[GitHubRepository]] = successFulRepoFut()) = {
     (repositoryMock.repositoriesByOrganization _).stubs(*).returning(future)
-    repositoryUrl
   }
 
-  private def successFulRepoFut(repositoryUrl: String =  "http://api.github.com/v3/repository") = {
+  private def successFulRepoFut(repositoryUrl: String =  repositoryUrl) = {
     Future.successful(Seq(GitHubRepository(name = "name", contributorsUrl = repositoryUrl)))
   }
 }
