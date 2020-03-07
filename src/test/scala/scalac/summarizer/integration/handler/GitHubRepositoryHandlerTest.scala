@@ -1,12 +1,13 @@
 package scalac.summarizer.integration.handler
 
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
+import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpResponse}
 import akka.util.ByteString
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{AsyncFlatSpec, Matchers}
 import scalac.summarizer.ClientHandlerMock
 import scalac.summarizer.integration.model.GitHubRepository
-
+import scala.collection.immutable
 import scala.concurrent.Future
 
 class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with AsyncMockFactory {
@@ -16,23 +17,22 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
 
   "given an valid json" should "be processed" in {
     val organization = "myOrg"
-    val organizationString = """[
-                               |  {
-                               |    "name": "styleguide",
-                               |    "contributors_url": "https://api.github.com/repos/animikii/styleguide/contributors"
-                               |  },
-                               |  {
-                               |    "name": "payola",
-                               |    "contributors_url": "https://api.github.com/repos/animikii/payola/contributors"
-                               |  },
-                               |  {
-                               |    "name": "ubc-ceih",
-                               |    "contributors_url": "https://api.github.com/repos/animikii/ubc-ceih/contributors"
-                               |  }
-                               |]""".stripMargin
+    val json = """[
+                 |  {
+                 |    "name": "styleguide",
+                 |    "contributors_url": "https://api.g/styleguide/contributors"
+                 |  },
+                 |  {
+                 |    "name": "payola",
+                 |    "contributors_url": "https://api.g/payola/contributors"
+                 |  },
+                 |  {
+                 |    "name": "ubc-ceih",
+                 |    "contributors_url": "https://api.g/ubc-ceih/contributors"
+                 |  }
+                 |]""".stripMargin
 
-      httpClientMock.mock.expects(*)
-     .returning(Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,ByteString(organizationString)))))
+    httpClientMock.mockResponse(json)
 
     val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization(organization)
 
@@ -40,12 +40,60 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
   }
 
   "given a failed response" should "return an empty list" in {
-    httpClientMock.mock.expects(*)
-      .returning(Future.failed(new IllegalArgumentException()))
+    httpClientMock.mock.expects(*).returning(Future.failed(new IllegalArgumentException()))
 
     val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("*")
 
     contributors map  { it => it should have size 0 }
   }
+
+  "given an response with next pages" should "follow them" in {
+    val organization = "myOrg"
+    val firstPage = "https://api.github.com/organizations/3430433/repos?page=1"
+    val nextPage = "https://api.github.com/organizations/3430433/repos?page=2"
+    val firstPagination = s"<$nextPage>; rel=next, <$nextPage>; rel=last"
+    val lastPagination = s"<$firstPage>; rel=prev, <$nextPage>; rel=last"
+    val json = """[
+                 |  {
+                 |    "name": "styleguide",
+                 |    "contributors_url": "https://api.g/styleguide/contributors"
+                 |  }
+                 |]""".stripMargin
+    val firstHeaders = immutable.Seq[HttpHeader](RawHeader("Link", firstPagination))
+    val secondHeaders = immutable.Seq[HttpHeader](RawHeader("Link", lastPagination))
+
+    httpClientMock.mockResponse(json, firstHeaders)
+
+    httpClientMock.mockResponse(json, secondHeaders)
+
+    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization(organization)
+
+    contributors map  { it => it should have size 2 }
+  }
+
+  "given an response without next pages" should "follow nothing" in {
+    val organization = "myOrg"
+    val firstPage = "https://api.github.com/organizations/3430433/repos?page=1"
+    val nextPage = "https://api.github.com/organizations/3430433/repos?page=2"
+    val firstPagination = s"<$nextPage>; rel=prev, <$nextPage>; rel=last"
+    val lastPagination = s"<$firstPage>; rel=prev, <$nextPage>; rel=last"
+    val json = """[
+                 |  {
+                 |    "name": "styleguide",
+                 |    "contributors_url": "https://api.g/styleguide/contributors"
+                 |  }
+                 |]""".stripMargin
+    val firstHeaders = immutable.Seq[HttpHeader](RawHeader("Link", firstPagination))
+    val secondHeaders = immutable.Seq[HttpHeader](RawHeader("Link", lastPagination))
+
+    httpClientMock.mockResponse(json, firstHeaders)
+
+    httpClientMock.mockResponse(json, secondHeaders)
+
+    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization(organization)
+
+    contributors map  { it => it should have size 1 }
+  }
+
 
 }

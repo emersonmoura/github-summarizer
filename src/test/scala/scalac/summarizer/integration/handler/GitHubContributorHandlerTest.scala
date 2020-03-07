@@ -1,7 +1,5 @@
 package scalac.summarizer.integration.handler
 
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
-import akka.util.ByteString
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{AsyncFlatSpec, Matchers}
 import scalac.summarizer.ClientHandlerMock
@@ -16,7 +14,7 @@ class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with Asyn
 
   "given an valid json" should "be processed" in {
     val repository = "myRepo"
-    val stripString =  """[
+    val json =  """[
           {
             "login": "dakotalightning",
             "contributions": 29
@@ -26,8 +24,8 @@ class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with Asyn
            "contributions": 2
           }
         ]""".stripMargin
-      httpClientMock.mock.expects(*)
-     .returning(Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,ByteString(stripString)))))
+
+    httpClientMock.mockResponse(json)
 
     val contributors: Future[Set[Contributor]] = handler.contributorsByRepository(repository)
 
@@ -35,12 +33,13 @@ class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with Asyn
   }
 
   "given a failed response" should "return an empty list" in {
-    httpClientMock.mock.expects(*)
-      .returning(Future.failed(new IllegalArgumentException()))
+    httpClientMock.mock.expects(*).returning(Future.failed(new IllegalArgumentException()))
 
     val contributors: Future[Set[Contributor]] = handler.contributorsByRepository("*")
 
     contributors map  { it => it should have size 0 }
   }
+
+
 
 }

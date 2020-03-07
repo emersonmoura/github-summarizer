@@ -1,7 +1,7 @@
 package scalac.summarizer.handler
 
 import org.scalamock.scalatest.AsyncMockFactory
-import org.scalatest.{AsyncFlatSpec, Matchers, OneInstancePerTest}
+import org.scalatest.{AsyncFlatSpec, Matchers}
 import scalac.summarizer.integration.handler.{ContributorHandler, RepositoryHandler}
 import scalac.summarizer.integration.model.GitHubRepository
 import scalac.summarizer.model.Contributor
