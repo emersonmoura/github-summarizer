@@ -1,29 +1,30 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+### To run it ### 
 
-### What is this repository for? ###
+Have in mind that you must have a Scala environment
+* Scala version 2.12.8
+* SBT version 1.3.8
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+execute the command (terminal)
+```
+sbt run
+```
 
-### How do I get set up? ###
+or executing the main class
+```
+scalac.summarizer.Main
+```
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+after that, you will be able to make requests
+```
+curl localhost:8080/org/{org_name}/contributors
+```
 
-### Contribution guidelines ###
+### Contextualization ###
 
-* Writing tests
-* Code review
-* Other guidelines
+GitHub portal is centered around organizations and repositories. 
+Each organization has many repositories and each repository has many contributors. 
 
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+This system has an endpoint that given the name of the organization will return a list of contributors sorted by the
+number of contributions.
