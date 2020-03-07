@@ -17,20 +17,11 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
 
   "given an valid json" should "be processed" in {
     val organization = "myOrg"
-    val json = """[
-                 |  {
-                 |    "name": "styleguide",
-                 |    "contributors_url": "https://api.g/styleguide/contributors"
-                 |  },
-                 |  {
-                 |    "name": "payola",
-                 |    "contributors_url": "https://api.g/payola/contributors"
-                 |  },
-                 |  {
-                 |    "name": "ubc-ceih",
-                 |    "contributors_url": "https://api.g/ubc-ceih/contributors"
-                 |  }
-                 |]""".stripMargin
+    val json = s"""[
+                 ${repositoryJson("styleguide")},
+                 ${repositoryJson("payola")},
+                 ${repositoryJson("ubc-ceih")}
+                ]""".stripMargin
 
     httpClientMock.mockResponse(json)
 
@@ -48,51 +39,53 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
   }
 
   "given an response with next pages" should "follow them" in {
-    val organization = "myOrg"
     val firstPage = "https://api.github.com/organizations/3430433/repos?page=1"
     val nextPage = "https://api.github.com/organizations/3430433/repos?page=2"
     val firstPagination = s"<$nextPage>; rel=next, <$nextPage>; rel=last"
     val lastPagination = s"<$firstPage>; rel=prev, <$nextPage>; rel=last"
-    val json = """[
-                 |  {
-                 |    "name": "styleguide",
-                 |    "contributors_url": "https://api.g/styleguide/contributors"
-                 |  }
-                 |]""".stripMargin
+    val firstExpectedName = "styleguide"
+    val secondExpectedName = "jspahrsummers"
     val firstHeaders = immutable.Seq[HttpHeader](RawHeader("Link", firstPagination))
     val secondHeaders = immutable.Seq[HttpHeader](RawHeader("Link", lastPagination))
 
-    httpClientMock.mockResponse(json, firstHeaders)
+    httpClientMock.mockResponse(repositoriesJson(firstExpectedName), firstHeaders)
 
-    httpClientMock.mockResponse(json, secondHeaders)
+    httpClientMock.mockResponse(repositoriesJson(secondExpectedName), secondHeaders)
 
-    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization(organization)
+    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("organization")
 
-    contributors map  { it => it should have size 2 }
+    contributors map  { it =>
+      it should have size 2
+      it.last.name should be(firstExpectedName)
+      it.head.name should be(secondExpectedName)
+    }
   }
 
   "given an response without next pages" should "follow nothing" in {
-    val organization = "myOrg"
-    val firstPage = "https://api.github.com/organizations/3430433/repos?page=1"
     val nextPage = "https://api.github.com/organizations/3430433/repos?page=2"
     val firstPagination = s"<$nextPage>; rel=prev, <$nextPage>; rel=last"
-    val lastPagination = s"<$firstPage>; rel=prev, <$nextPage>; rel=last"
-    val json = """[
-                 |  {
-                 |    "name": "styleguide",
-                 |    "contributors_url": "https://api.g/styleguide/contributors"
-                 |  }
-                 |]""".stripMargin
     val firstHeaders = immutable.Seq[HttpHeader](RawHeader("Link", firstPagination))
-    val secondHeaders = immutable.Seq[HttpHeader](RawHeader("Link", lastPagination))
 
-    httpClientMock.mockResponse(json, firstHeaders)
+    httpClientMock.mockResponse(repositoriesJson(), firstHeaders)
 
-    httpClientMock.mockResponse(json, secondHeaders)
+    httpClientMock.mockResponse(repositoriesJson(), firstHeaders)
 
-    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization(organization)
+    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("organization")
 
     contributors map  { it => it should have size 1 }
+  }
+
+  private def repositoriesJson(name: String = "styleguide") = {
+    s"""[
+        ${repositoryJson(name)}
+       ]""".stripMargin
+  }
+
+  private def repositoryJson(name: String) = {
+    s"""{
+        | "name": "$name",
+        | "contributors_url": "https://api.g/styleguide/contributors"
+       }""".stripMargin
   }
 
 

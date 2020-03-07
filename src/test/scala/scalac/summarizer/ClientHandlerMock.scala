@@ -13,8 +13,8 @@ class ClientHandlerMock extends HttpClient with MockFactory {
   val mock = mockFunction[HttpRequest, Future[HttpResponse]]
   override def sendRequest(httpRequest: HttpRequest)(implicit actorSystem: ActorSystem): Future[HttpResponse] = mock(httpRequest)
 
-  def mockResponse(organizationString: String, firstHeaders: immutable.Seq[HttpHeader] = immutable.Seq.empty[HttpHeader]) = {
-    val httpEntity = HttpEntity(ContentTypes.`application/json`, ByteString(organizationString))
-    mock.expects(*).returning(Future.successful(HttpResponse(headers = firstHeaders, entity = httpEntity)))
+  def mockResponse(jsonString: String, headers: immutable.Seq[HttpHeader] = immutable.Seq.empty[HttpHeader]) = {
+    val httpEntity = HttpEntity(ContentTypes.`application/json`, ByteString(jsonString))
+    mock.expects(*).returning(Future.successful(HttpResponse(headers = headers, entity = httpEntity)))
   }
 }

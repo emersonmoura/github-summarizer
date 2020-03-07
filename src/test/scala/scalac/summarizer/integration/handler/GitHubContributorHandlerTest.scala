@@ -14,15 +14,9 @@ class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with Asyn
 
   "given an valid json" should "be processed" in {
     val repository = "myRepo"
-    val json =  """[
-          {
-            "login": "dakotalightning",
-            "contributions": 29
-          },
-          {
-            "login": "richardtape",
-           "contributions": 2
-          }
+    val json =  s"""[
+          ${contributorJson(29)},
+          ${contributorJson(2)}
         ]""".stripMargin
 
     httpClientMock.mockResponse(json)
@@ -38,6 +32,13 @@ class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with Asyn
     val contributors: Future[Set[Contributor]] = handler.contributorsByRepository("*")
 
     contributors map  { it => it should have size 0 }
+  }
+
+  private def contributorJson(contributions: Int, login: String = "dakotalightning") = {
+    s"""{
+       | "login": "$login",
+       | "contributions": $contributions
+       }""".stripMargin
   }
 
 
