@@ -17,7 +17,7 @@ class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with Asy
 
   "given a failed repositories response" should "return an empty list" in {
     returningContributors(
-      Future.successful(Set(Contributor(name = "name", contributions = 10))),
+      Future.successful(Seq(Contributor(name = "name", contributions = 10))),
       Future.failed(new IllegalArgumentException())
     )
 
@@ -35,7 +35,7 @@ class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with Asy
   }
 
   "given a repository with contributors" should "have its ones processed" in {
-    returningContributors(Future.successful(Set(Contributor(name = "name", contributions = 10))))
+    returningContributors(Future.successful(Seq(Contributor(name = "name", contributions = 10))))
 
     val contributors: Future[Seq[Contributor]] = organizationHandler.contributorsRankingByOrganization("organization")
 
@@ -44,7 +44,7 @@ class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with Asy
 
   "given a repository with more than one contributor" should "return it sorted by their contributions" in {
     returningContributors(Future.successful(
-      Set(Contributor(name = "first", contributions = 10),
+      Seq(Contributor(name = "first", contributions = 10),
       Contributor(name = "second", contributions = 1))
     ))
 
@@ -57,7 +57,7 @@ class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with Asy
 
   }
 
-  private def returningContributors(contributors: Future[Set[Contributor]], future: => Future[Seq[GitHubRepository]] = successFulRepoFut()) = {
+  private def returningContributors(contributors: Future[Seq[Contributor]], future: => Future[Seq[GitHubRepository]] = successFulRepoFut()) = {
     (contributorMock.contributorsByRepository _).stubs(repositoryUrl).returning(contributors)
     returnedUrl(future)
   }

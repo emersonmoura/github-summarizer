@@ -25,17 +25,17 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
 
     httpClientMock.mockResponse(json)
 
-    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization(organization)
+    val eventualRepositories: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization(organization)
 
-    contributors map  { it => assert(!it.map(_.contributorsUrl).contains(null)) }
+    eventualRepositories map  { it => assert(!it.map(_.contributorsUrl).contains(null)) }
   }
 
   "given a failed response" should "return an empty list" in {
     httpClientMock.mock.expects(*).returning(Future.failed(new IllegalArgumentException()))
 
-    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("*")
+    val eventualRepositories: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("*")
 
-    contributors map  { it => it should have size 0 }
+    eventualRepositories map  { it => it should have size 0 }
   }
 
   "given an response with next pages" should "follow them" in {
@@ -52,9 +52,9 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
 
     httpClientMock.mockResponse(repositoriesJson(secondExpectedName), secondHeaders)
 
-    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("organization")
+    val eventualRepositories: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("organization")
 
-    contributors map  { it =>
+    eventualRepositories map  { it =>
       it should have size 2
       it.last.name should be(firstExpectedName)
       it.head.name should be(secondExpectedName)
@@ -70,9 +70,9 @@ class GitHubRepositoryHandlerTest extends AsyncFlatSpec with Matchers with Async
 
     httpClientMock.mockResponse(repositoriesJson(), firstHeaders)
 
-    val contributors: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("organization")
+    val eventualRepositories: Future[Seq[GitHubRepository]] = handler.repositoriesByOrganization("organization")
 
-    contributors map  { it => it should have size 1 }
+    eventualRepositories map  { it => it should have size 1 }
   }
 
   private def repositoriesJson(name: String = "styleguide") = {

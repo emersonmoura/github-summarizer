@@ -4,7 +4,7 @@ import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{AsyncFlatSpec, Matchers}
 import scalac.summarizer.ClientHandlerMock
 import scalac.summarizer.model.Contributor
-
+import scala.collection.immutable
 import scala.concurrent.Future
 
 class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with AsyncMockFactory {
@@ -13,7 +13,6 @@ class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with Asyn
   private val handler = new GitHubContributorHandler(httpClientMock)
 
   "given an valid json" should "be processed" in {
-    val repository = "myRepo"
     val json =  s"""[
           ${contributorJson(29)},
           ${contributorJson(2)}
@@ -21,7 +20,7 @@ class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with Asyn
 
     httpClientMock.mockResponse(json)
 
-    val contributors: Future[Set[Contributor]] = handler.contributorsByRepository(repository)
+    val contributors: Future[Seq[Contributor]] = handler.contributorsByRepository("repository")
 
     contributors map  { it => assert(!it.map(_.contributions).contains(0)) }
   }
@@ -29,7 +28,7 @@ class GitHubContributorHandlerTest extends AsyncFlatSpec with Matchers with Asyn
   "given a failed response" should "return an empty list" in {
     httpClientMock.mock.expects(*).returning(Future.failed(new IllegalArgumentException()))
 
-    val contributors: Future[Set[Contributor]] = handler.contributorsByRepository("*")
+    val contributors: Future[Seq[Contributor]] = handler.contributorsByRepository("*")
 
     contributors map  { it => it should have size 0 }
   }

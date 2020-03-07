@@ -1,6 +1,6 @@
 package scalac.summarizer.integration.handler
 
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
+import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import scalac.summarizer.http.HttpClient
@@ -13,9 +13,10 @@ import scala.concurrent.Future
 
 class GitHubContributorHandler(httpClient: HttpClient) extends JsonSupport with ContributorHandler{
 
-  def contributorsByRepository(repositoryUrl: String): Future[Set[Contributor]] = {
+  def contributorsByRepository(repositoryUrl: String): Future[Seq[Contributor]] = {
     val header = immutable.Seq(RawHeader("If-Modified-Since", "Fri, 06 Mar 2020 03:32:00 GMT"))
-    httpClient.sendRequest(HttpRequest(uri = repositoryUrl)).flatMap(response => Unmarshal(response).to[Set[Contributor]])
-    .fallbackTo(Future.successful(Set.empty[Contributor]))
+    httpClient.sendRequest(HttpRequest(uri = repositoryUrl)).flatMap(response => Unmarshal(response).to[Seq[Contributor]])
+    .fallbackTo(Future.successful(Seq.empty[Contributor]))
   }
+
 }
