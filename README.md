@@ -1,8 +1,9 @@
 # README #
 
-### To run it ### 
+### To run it ###
 
 Have in mind that you must have a Scala environment
+
 * Scala version 2.12.8
 * SBT version 1.3.8
 
