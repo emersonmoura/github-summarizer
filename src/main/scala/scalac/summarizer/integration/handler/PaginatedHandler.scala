@@ -10,14 +10,14 @@ object PaginatedHandler {
 
   implicit class Paginated(httpClient: HttpClient) extends JsonSupport {
 
-    def processPaginatedRequest[T](url: String, fx: HttpResponse => Future[Seq[T]]): Future[Seq[T]]  = {
+    def processPaginatedRequest[T](url: String, unmarshal: HttpResponse => Future[Seq[T]]): Future[Seq[T]]  = {
       def genericFallback = {
         Future.successful(Seq.empty[T])
       }
       def processPagination(response: HttpResponse): Future[Seq[T]] = {
         val link = HeaderLinkExtractor.extract(response.headers)
-        val eventualRepositories = fx(response)
-        link.map(value => processPaginatedRequest(value, fx).zipWith(eventualRepositories)(_ ++ _)).getOrElse(eventualRepositories)
+        val eventualValue = unmarshal(response)
+        link.map(value => processPaginatedRequest(value, unmarshal).zipWith(eventualValue)(_ ++ _)).getOrElse(eventualValue)
       }
       httpClient.sendRequest(HttpRequest(uri = url)).flatMap(processPagination).fallbackTo(genericFallback)
     }
