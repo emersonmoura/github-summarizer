@@ -8,12 +8,12 @@ import scalac.summarizer.model.Contributor
 
 import scala.concurrent.Future
 
-class ScalacOrganizationHandlerTest extends AsyncFlatSpec with Matchers with AsyncMockFactory {
+class DefaultOrganizationHandlerTest extends AsyncFlatSpec with Matchers with AsyncMockFactory {
 
   val repositoryUrl = "http://api.github.com/v3/repository"
   private val repositoryMock = mock[RepositoryHandler]
   private val contributorMock = mock[ContributorHandler]
-  private val organizationHandler = new ScalacOrganizationHandler(repositoryMock, contributorMock)
+  private val organizationHandler = new DefaultOrganizationHandler(repositoryMock, contributorMock)
 
   "given a failed repositories response" should "return an empty list" in {
     returningContributors(

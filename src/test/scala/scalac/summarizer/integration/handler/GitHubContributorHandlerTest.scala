@@ -6,6 +6,7 @@ import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{AsyncFlatSpec, Matchers}
 import scalac.summarizer.ClientHandlerMock
 import scalac.summarizer.model.Contributor
+
 import scala.collection.immutable
 import scala.concurrent.Future
 

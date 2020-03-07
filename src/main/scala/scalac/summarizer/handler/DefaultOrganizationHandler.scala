@@ -8,7 +8,7 @@ import scalac.summarizer.model.Contributor
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ScalacOrganizationHandler(repositoryHandler: RepositoryHandler, contributorHandler: ContributorHandler) extends JsonSupport with OrganizationHandler{
+class DefaultOrganizationHandler(repositoryHandler: RepositoryHandler, contributorHandler: ContributorHandler) extends JsonSupport with OrganizationHandler{
 
   def contributorsRankingByOrganization(organization: String): Future[Seq[Contributor]] = {
 
