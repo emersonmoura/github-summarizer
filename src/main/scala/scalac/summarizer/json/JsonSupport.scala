@@ -1,6 +1,5 @@
 package scalac.summarizer.json
 
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.stream.{ActorMaterializer, Materializer}
