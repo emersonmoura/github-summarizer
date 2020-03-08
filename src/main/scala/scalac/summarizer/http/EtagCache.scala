@@ -29,15 +29,16 @@ object EtagCache {
   }
 
   private def modified[T](response: HttpResponse) = {
-    response.status.intValue() != 304
+    response.status.intValue() == 200
   }
 
   def getHash(url: String) = {
     cache.getIfPresent(url).map(_.hash).orNull
   }
 
-  def getCachedValue[T](url: String): Option[Future[Seq[T]]] = {
-    cache.getIfPresent(url).map(_.value.asInstanceOf[Future[Seq[T]]])
+  def getCachedValueWhenRequired[T](url: String, response: HttpResponse): Option[Future[Seq[T]]] = {
+    val cached = cache.getIfPresent(url).map(_.value.asInstanceOf[Future[Seq[T]]])
+    if(modified(response)) Option.empty else cached
   }
 
 

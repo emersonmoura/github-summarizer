@@ -22,7 +22,7 @@ object PaginatedHandler {
       }
 
       def processCachedPagination(response: HttpResponse): Future[Seq[T]] = {
-        val eventualValue = EtagCache.getCachedValue(url).getOrElse(unmarshal(response))
+        val eventualValue = EtagCache.getCachedValueWhenRequired(url, response).getOrElse(unmarshal(response))
         EtagCache.cacheIfRequired(url, response, eventualValue)
         followLink(response.headers, eventualValue)
       }
