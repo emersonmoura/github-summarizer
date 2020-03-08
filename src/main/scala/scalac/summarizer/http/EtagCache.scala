@@ -1,30 +1,45 @@
 package scalac.summarizer.http
 
-import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
-
 import akka.http.scaladsl.model.HttpResponse
+
+import scala.concurrent.Future
 
 object EtagCache {
 
-  val cache: ConcurrentMap[String, String] = new ConcurrentHashMap
+  import com.github.blemale.scaffeine.{Cache, Scaffeine}
+
+  import scala.concurrent.duration._
+
+  case class Wrapper[T](hash: String, value: Future[Seq[T]])
+
+  val cache: Cache[String, Wrapper[Any]] =
+    Scaffeine()
+      .expireAfterWrite(10.minutes)
+      .maximumSize(500)
+      .build[String, Wrapper[Any]]()
 
   val ETAG = "etag"
 
-  def putIfAbsent[T](url: String, response: HttpResponse):Unit = {
-    val etag = getEtag(response, url)
-    etag.getOrElse(cache.put(url, _))
+  def cacheIfRequired[T](url: String, response: HttpResponse, future: Future[Seq[T]]):Unit = {
+    def extractEtag = {
+      response.headers.find(_.is(ETAG)).map(_.value()).orNull
+    }
+    val etag = extractEtag
+    if (etag != null && modified(response)) cache.put(url, Wrapper(etag, future))
   }
 
-  def get(url: String) = {
-    cache.get(url)
+  private def modified[T](response: HttpResponse) = {
+    response.status.intValue() != 304
   }
 
-  private def getEtag[T](response: HttpResponse, value: String) = {
-    Option(cache.getOrDefault(value,extractEtag(response)))
+  def getHash(url: String) = {
+    cache.getIfPresent(url).map(_.hash).orNull
   }
 
-  private def extractEtag[T](response: HttpResponse) = {
-    response.headers.find(_.is(ETAG)).map(_.value()).orNull
+  def getCachedValue[T](url: String): Option[Future[Seq[T]]] = {
+    cache.getIfPresent(url).map(_.value.asInstanceOf[Future[Seq[T]]])
   }
+
+
 
 }

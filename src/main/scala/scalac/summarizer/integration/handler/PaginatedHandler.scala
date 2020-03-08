@@ -1,8 +1,6 @@
 package scalac.summarizer.integration.handler
 
-import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
-
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse}
 import scalac.summarizer.http.{EtagCache, HeaderFactory, HeaderLinkExtractor, HttpClient}
 import scalac.summarizer.json.JsonSupport
 
@@ -17,17 +15,22 @@ object PaginatedHandler {
       def genericFallback = {
         Future.successful(Seq.empty[T])
       }
-      def processPagination(response: HttpResponse): Future[Seq[T]] = {
-        val link = HeaderLinkExtractor.extract(response.headers)
-        val eventualValue = unmarshal(response)
-        EtagCache.putIfAbsent(url, response)
-        link.map(value => processPaginatedRequest(value,unmarshal).zipWith(eventualValue)(_ ++ _)).getOrElse(eventualValue)
+
+      def followLink(headers: Seq[HttpHeader], eventualValue: Future[Seq[T]]) = {
+        val link = HeaderLinkExtractor.extract(headers)
+        link.map(value => processPaginatedRequest(value, unmarshal).zipWith(eventualValue)(_ ++ _)).getOrElse(eventualValue)
       }
-      httpClient.sendRequest(HttpRequest(uri = url, headers = headers(url) )).flatMap(processPagination).fallbackTo(genericFallback)
+
+      def processCachedPagination(response: HttpResponse): Future[Seq[T]] = {
+        val eventualValue = unmarshal(response)
+        EtagCache.cacheIfRequired(url, response, eventualValue)
+        EtagCache.getCachedValue(url).getOrElse(followLink(response.headers, eventualValue))
+      }
+      httpClient.sendRequest(HttpRequest(uri = url, headers = headers(url) )).flatMap(processCachedPagination).fallbackTo(genericFallback)
     }
 
     private def headers[T](url: String) = {
-      HeaderFactory.gitHubHeaders(EtagCache.get(url))
+      HeaderFactory.gitHubHeaders(EtagCache.getHash(url))
     }
   }
 
