@@ -17,7 +17,7 @@ class DefaultOrganizationHandler(repositoryHandler: RepositoryHandler, contribut
     }
 
     def reduceAndSort(contributorsForReduction: Seq[Seq[Contributor]]):Seq[Contributor] = {
-      contributorsForReduction.fold(Seq.empty[Contributor])(accumulator).toSeq.sortBy(_.contributions)
+      contributorsForReduction.fold(Seq.empty[Contributor])(accumulator).sortBy(_.contributions)
     }
     repositoryHandler.repositoriesByOrganization(organization).fallbackTo(repositoryFallback).flatMap { repositories =>
       Future.sequence(repositories.map(_.contributorsUrl).map(getContributorsByRepository)).map(reduceAndSort)
