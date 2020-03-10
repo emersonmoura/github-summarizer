@@ -22,6 +22,8 @@ after that, you will be able to make requests
 curl localhost:8080/org/{org_name}/contributors
 ```
 
+you can use your GitHub token setting it at the GH_TOKEN environment variable.
+
 ### Contextualization ###
 
 GitHub portal is centered around organizations and repositories. 
